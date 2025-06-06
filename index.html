@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>Dino Hra se skóre</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #f4f4f4;
+      font-family: sans-serif;
+    }
+
+    #game {
+      width: 100vw;
+      height: 100vh;
+      position: relative;
+      background-color: #fff;
+      border-top: 4px solid #555;
+    }
+
+    #dino {
+      width: 60px;
+      height: 60px;
+      position: absolute;
+      bottom: 0;
+      left: 50px;
+    }
+
+    #dino img {
+      width: 100%;
+      height: auto;
+    }
+
+    #obstacle {
+      width: 50px;
+      height: 60px;
+      position: absolute;
+      bottom: 0;
+      left: 100%;
+      animation: move 2s linear infinite;
+    }
+
+    #obstacle img {
+      width: 100%;
+      height: auto;
+    }
+
+    @keyframes move {
+      0% { left: 100%; }
+      100% { left: -60px; }
+    }
+
+    #score {
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      font-size: 24px;
+      font-weight: bold;
+      color: #333;
+      background: rgba(255, 255, 255, 0.8);
+      padding: 8px 16px;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div id="game">
+    <div id="dino">
+      <img src="dino.png" alt="Dino">
+    </div>
+    <div id="obstacle">
+      <img src="kaktus.png" alt="Kaktus">
+    </div>
+    <div id="score">Skóre: 0</div>
+  </div>
+
+  <script>
+    const dino = document.getElementById("dino");
+    const obstacle = document.getElementById("obstacle");
+    const scoreDisplay = document.getElementById("score");
+
+    let isJumping = false;
+    let score = parseInt(sessionStorage.getItem("score")) || 0;
+    let gameOver = false;
+
+    scoreDisplay.textContent = `Skóre: ${score}`;
+
+    // Skóre se zvyšuje každých 100 ms (přesnější pocit)
+    const scoreInterval = setInterval(() => {
+      if (!gameOver) {
+        score++;
+        sessionStorage.setItem("score", score);
+        scoreDisplay.textContent = `Skóre: ${score}`;
+      }
+    }, 100);
+
+    document.addEventListener("keydown", function(e) {
+      if (e.code === "Space" && !isJumping) {
+        jump();
+      }
+    });
+
+    function jump() {
+      isJumping = true;
+      let position = 0;
+      const up = setInterval(() => {
+        if (position >= 100) {
+          clearInterval(up);
+          const down = setInterval(() => {
+            if (position <= 0) {
+              clearInterval(down);
+              isJumping = false;
+            } else {
+              position -= 5;
+              dino.style.bottom = position + "px";
+            }
+          }, 20);
+        } else {
+          position += 5;
+          dino.style.bottom = position + "px";
+        }
+      }, 20);
+    }
+
+    // Detekce kolize
+    const checkCollision = setInterval(() => {
+      const dinoTop = parseInt(window.getComputedStyle(dino).getPropertyValue("bottom"));
+      const obstacleLeft = parseInt(window.getComputedStyle(obstacle).getPropertyValue("left"));
+
+      if (obstacleLeft < 100 && obstacleLeft > 40 && dinoTop < 50) {
+        gameOver = true;
+        clearInterval(scoreInterval);
+        clearInterval(checkCollision);
+        alert(`Konec hry! Tvé skóre: ${score}`);
+        sessionStorage.removeItem("score");
+        location.reload();
+      }
+    }, 10);
+  </script>
+</body>
+</html>
