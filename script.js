@@ -9,11 +9,9 @@ const gameOverBox = document.getElementById("game-over");
 let isJumping = false;
 let score = 0;
 let running = true;
-let obstacleSpeed = 3;
+let obstacleSpeed = 3; // výchozí rychlost překážek (délka animace v sekundách)
 
-const playerName = prompt("Zadej své jméno:")?.trim() || "Hráč";
-let scoreboard = JSON.parse(localStorage.getItem("scoreboard")) || {};
-let bestScore = scoreboard[playerName] || 0;
+let bestScore = parseInt(localStorage.getItem("bestScore")) || 0;
 bestScoreEl.textContent = bestScore;
 bestScoreGameOverEl.textContent = bestScore;
 
@@ -26,9 +24,7 @@ const scoreInterval = setInterval(() => {
       bestScore = score;
       bestScoreEl.textContent = bestScore;
       bestScoreGameOverEl.textContent = bestScore;
-
-      scoreboard[playerName] = bestScore;
-      localStorage.setItem("scoreboard", JSON.stringify(scoreboard));
+      localStorage.setItem("bestScore", bestScore);
     }
   }
 }, 100);
@@ -66,6 +62,7 @@ function createObstacle() {
 
   const obstacle = document.createElement("div");
   obstacle.classList.add("obstacle");
+
   obstacle.style.animation = `move ${obstacleSpeed}s linear forwards`;
   game.appendChild(obstacle);
 
@@ -94,6 +91,14 @@ function createObstacle() {
       finalScore.textContent = score;
       bestScoreGameOverEl.textContent = bestScore;
       gameOverBox.style.display = "block";
+
+      // Uložení skóre s jménem hráče
+      setTimeout(() => {
+        const playerName = prompt("Zadej své jméno:");
+        if (playerName) {
+          saveScore(playerName, score);
+        }
+      }, 100);
     }
 
     if (obsRect.right < 0) {
@@ -108,3 +113,11 @@ const obstacleInterval = setInterval(() => {
     createObstacle();
   }
 }, 1500);
+
+function saveScore(name, score) {
+  const scoreboard = JSON.parse(localStorage.getItem("scoreboard")) || {};
+  if (!scoreboard[name] || score > scoreboard[name]) {
+    scoreboard[name] = score;
+    localStorage.setItem("scoreboard", JSON.stringify(scoreboard));
+  }
+}
