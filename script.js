@@ -57,7 +57,7 @@ function createObstacle() {
   if (!running) return;
 
   // Zrychluj překážky (délka animace klesá, rychlost roste)
-  if (obstacleSpeed > 1.2) {
+  if (obstacleSpeed > 1.5) {
     obstacleSpeed -= 0.05;
   }
 
