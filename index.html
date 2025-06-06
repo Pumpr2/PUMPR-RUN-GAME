@@ -15,8 +15,8 @@
     #game {
       width: 100%;
       max-width: 800px;
-      height: 40vh;
-      max-height: 400px;
+      height: 60vh;
+      max-height: 600px;
       margin: 50px auto 10px auto;
       position: relative;
       background: #fff;
@@ -67,7 +67,7 @@
 
     #game-over {
       display: none;
-      position: absolute;
+      position: fixed;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
@@ -76,9 +76,18 @@
       padding: 20px;
       z-index: 10;
       text-align: center;
-      width: 80%;
-      max-width: 300px;
+      width: 90%;
+      max-width: 320px;
+      max-height: 80vh;
+      overflow-y: auto;
       box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+
+    #game-over button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 1.1em;
+      cursor: pointer;
     }
 
     #jump-btn {
@@ -96,6 +105,13 @@
     @media (pointer: coarse) {
       #jump-btn {
         display: block;
+      }
+    }
+
+    @media (max-width: 480px) {
+      #game {
+        height: 70vh;
+        max-height: none;
       }
     }
   </style>
