@@ -1,18 +1,31 @@
 const player = document.getElementById("player");
 const game = document.getElementById("game");
 const scoreEl = document.getElementById("score-value");
+const bestScoreEl = document.getElementById("best-score");
 const finalScore = document.getElementById("final-score");
+const bestScoreGameOverEl = document.getElementById("best-score-game-over");
 const gameOverBox = document.getElementById("game-over");
 
 let isJumping = false;
 let score = 0;
 let running = true;
 
+// Načti nejlepší skóre z localStorage (nebo 0 pokud neexistuje)
+let bestScore = parseInt(localStorage.getItem("bestScore")) || 0;
+bestScoreEl.textContent = bestScore;
+bestScoreGameOverEl.textContent = bestScore;
+
 const scoreInterval = setInterval(() => {
   if (running) {
     score++;
-    sessionStorage.setItem("score", score);
     scoreEl.textContent = score;
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestScoreEl.textContent = bestScore;
+      bestScoreGameOverEl.textContent = bestScore;
+      localStorage.setItem("bestScore", bestScore);
+    }
   }
 }, 100);
 
@@ -29,6 +42,7 @@ function triggerJump() {
 
 document.addEventListener("keydown", (e) => {
   if (e.code === "Space") {
+    e.preventDefault();
     triggerJump();
   }
 });
@@ -48,6 +62,7 @@ function createObstacle() {
     const playerRect = player.getBoundingClientRect();
     const obsRect = obstacle.getBoundingClientRect();
 
+    // jednoduchá kolize
     if (
       obsRect.left < playerRect.right &&
       obsRect.right > playerRect.left &&
@@ -66,4 +81,5 @@ function createObstacle() {
   }, 20);
 }
 
+// Generuj překážky každé 2 vteřiny
 setInterval(createObstacle, 2000);
