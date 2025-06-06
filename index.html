@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+<!-- ZAČÁTEK -->
+<!DOCTYPE html> 
 <html lang="cs">
 <head>
   <meta charset="UTF-8" />
@@ -126,9 +127,18 @@
       font-weight: bold;
       margin-bottom: 10px;
     }
+
+    #active-players {
+      text-align: center;
+      font-size: 1em;
+      margin-top: 10px;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
+
+  <div id="active-players">Hráčů právě hraje: 0</div>
 
   <div id="game">
     <div id="player"></div>
@@ -175,6 +185,13 @@
 
     document.getElementById("score-value").textContent = score;
     document.getElementById("best-score").textContent = bestScore;
+
+    function updateActivePlayersCount() {
+      const playerCount = Object.keys(scoreboard).length;
+      document.getElementById("active-players").textContent = `Hráčů právě hraje: ${playerCount}`;
+    }
+
+    updateActivePlayersCount();
 
     function triggerJump() {
       const player = document.getElementById("player");
@@ -233,7 +250,9 @@
         scoreboard[playerName] = score;
         localStorage.setItem("scoreboard", JSON.stringify(scoreboard));
       }
+
       updateScoreboardTable();
+      updateActivePlayersCount();
     }
 
     function updateScoreboardTable() {
@@ -251,3 +270,4 @@
   </script>
 </body>
 </html>
+<!-- KONEC -->
