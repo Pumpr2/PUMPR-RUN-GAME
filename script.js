@@ -86,9 +86,9 @@ function createObstacle() {
     if (overlap) {
       clearInterval(scoreInterval);
       clearInterval(moveInterval);
+      clearInterval(obstacleInterval); // 🟢 Tohle zastaví generování dalších překážek
       running = false;
 
-      // Poslední skok pro efekt letu dál po nárazu
       triggerJump(true);
 
       finalScore.textContent = score;
@@ -103,7 +103,8 @@ function createObstacle() {
   }, 20);
 }
 
-setInterval(() => {
+// 🟢 Nově ulož do proměnné, aby šel zastavit
+const obstacleInterval = setInterval(() => {
   if (running) {
     createObstacle();
   }
