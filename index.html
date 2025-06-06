@@ -48,11 +48,12 @@
       to { left: -60px; }
     }
     .jump {
-      animation: jump 1s ease-out;
+      animation: jump 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
     }
     @keyframes jump {
       0%   { bottom: 0; }
-      50%  { bottom: 50%; }
+      40%  { bottom: 50%; }
+      60%  { bottom: 50%; }
       100% { bottom: 0; }
     }
     #score {
