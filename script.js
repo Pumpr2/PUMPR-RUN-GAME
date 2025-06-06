@@ -9,9 +9,11 @@ const gameOverBox = document.getElementById("game-over");
 let isJumping = false;
 let score = 0;
 let running = true;
-let obstacleSpeed = 3; // výchozí rychlost překážek (délka animace v sekundách)
+let obstacleSpeed = 3;
 
-let bestScore = parseInt(localStorage.getItem("bestScore")) || 0;
+const playerName = prompt("Zadej své jméno:")?.trim() || "Hráč";
+let scoreboard = JSON.parse(localStorage.getItem("scoreboard")) || {};
+let bestScore = scoreboard[playerName] || 0;
 bestScoreEl.textContent = bestScore;
 bestScoreGameOverEl.textContent = bestScore;
 
@@ -24,7 +26,9 @@ const scoreInterval = setInterval(() => {
       bestScore = score;
       bestScoreEl.textContent = bestScore;
       bestScoreGameOverEl.textContent = bestScore;
-      localStorage.setItem("bestScore", bestScore);
+
+      scoreboard[playerName] = bestScore;
+      localStorage.setItem("scoreboard", JSON.stringify(scoreboard));
     }
   }
 }, 100);
@@ -56,19 +60,15 @@ document.addEventListener("touchstart", () => {
 function createObstacle() {
   if (!running) return;
 
-  // Zrychluj překážky (délka animace klesá, rychlost roste)
   if (obstacleSpeed > 1.5) {
     obstacleSpeed -= 0.05;
   }
 
   const obstacle = document.createElement("div");
   obstacle.classList.add("obstacle");
-
-  // Nastav animaci s aktuální rychlostí
   obstacle.style.animation = `move ${obstacleSpeed}s linear forwards`;
   game.appendChild(obstacle);
 
-  // Kontrola kolize v intervalu
   const moveInterval = setInterval(() => {
     if (!running) {
       clearInterval(moveInterval);
@@ -86,7 +86,7 @@ function createObstacle() {
     if (overlap) {
       clearInterval(scoreInterval);
       clearInterval(moveInterval);
-      clearInterval(obstacleInterval); // 🟢 Tohle zastaví generování dalších překážek
+      clearInterval(obstacleInterval);
       running = false;
 
       triggerJump(true);
@@ -103,7 +103,6 @@ function createObstacle() {
   }, 20);
 }
 
-// 🟢 Nově ulož do proměnné, aby šel zastavit
 const obstacleInterval = setInterval(() => {
   if (running) {
     createObstacle();
