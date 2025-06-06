@@ -1,123 +1,139 @@
-const player = document.getElementById("player");
-const game = document.getElementById("game");
-const scoreEl = document.getElementById("score-value");
-const bestScoreEl = document.getElementById("best-score");
-const finalScore = document.getElementById("final-score");
-const bestScoreGameOverEl = document.getElementById("best-score-game-over");
-const gameOverBox = document.getElementById("game-over");
+let player = document.getElementById("player");
+let scoreValue = document.getElementById("score-value");
+let bestScoreDisplay = document.getElementById("best-score");
+let finalScore = document.getElementById("final-score");
+let bestScoreGameOver = document.getElementById("best-score-game-over");
+let gameOverScreen = document.getElementById("game-over");
+let scoreboardBody = document.getElementById("scoreboard-body");
+let playerNameDisplay = document.getElementById("player-name-display");
 
 let isJumping = false;
 let score = 0;
-let running = true;
-let obstacleSpeed = 3; // výchozí rychlost překážek (délka animace v sekundách)
+let bestScore = 0;
+let gameRunning = true;
+let playerName;
 
-let bestScore = parseInt(localStorage.getItem("bestScore")) || 0;
-bestScoreEl.textContent = bestScore;
-bestScoreGameOverEl.textContent = bestScore;
-
-const scoreInterval = setInterval(() => {
-  if (running) {
-    score++;
-    scoreEl.textContent = score;
-
-    if (score > bestScore) {
-      bestScore = score;
-      bestScoreEl.textContent = bestScore;
-      bestScoreGameOverEl.textContent = bestScore;
-      localStorage.setItem("bestScore", bestScore);
-    }
+// Získání nebo zadání jména hráče
+function getPlayerName() {
+  let name = localStorage.getItem("playerName");
+  if (!name) {
+    name = prompt("Zadej své jméno:");
+    if (!name) name = "Hráč";
+    localStorage.setItem("playerName", name);
   }
-}, 100);
-
-function triggerJump(force = false) {
-  if ((!isJumping && running) || force) {
-    isJumping = true;
-    player.classList.add("jump");
-    setTimeout(() => {
-      if (running) {
-        player.classList.remove("jump");
-        isJumping = false;
-      }
-    }, 500);
-  }
+  return name;
 }
 
-document.addEventListener("keydown", (e) => {
-  if (e.code === "Space") {
-    e.preventDefault();
-    triggerJump();
-  }
-});
+// Načti jméno při načtení
+playerName = getPlayerName();
+playerNameDisplay.textContent = `Jméno hráče: ${playerName}`;
 
-document.addEventListener("touchstart", () => {
-  triggerJump();
-}, { passive: true });
+// Získání skóre hráče
+let scoreboard = JSON.parse(localStorage.getItem("scoreboard")) || {};
+bestScore = scoreboard[playerName] || 0;
+bestScoreDisplay.textContent = bestScore;
 
-function createObstacle() {
-  if (!running) return;
+// Funkce skoku
+function triggerJump() {
+  if (isJumping || !gameRunning) return;
+  isJumping = true;
+  player.classList.add("jump");
 
-  if (obstacleSpeed > 1.5) {
-    obstacleSpeed -= 0.05;
-  }
+  setTimeout(() => {
+    player.classList.remove("jump");
+    isJumping = false;
+  }, 500);
+}
+
+// Přidávání překážek
+function spawnObstacle() {
+  if (!gameRunning) return;
 
   const obstacle = document.createElement("div");
   obstacle.classList.add("obstacle");
+  obstacle.style.left = "100%";
+  document.getElementById("game").appendChild(obstacle);
 
-  obstacle.style.animation = `move ${obstacleSpeed}s linear forwards`;
-  game.appendChild(obstacle);
-
-  const moveInterval = setInterval(() => {
-    if (!running) {
+  let moveInterval = setInterval(() => {
+    if (!gameRunning) {
       clearInterval(moveInterval);
+      obstacle.remove();
       return;
     }
 
-    const playerRect = player.getBoundingClientRect();
-    const obsRect = obstacle.getBoundingClientRect();
+    let obstacleLeft = parseInt(obstacle.style.left);
+    if (isNaN(obstacleLeft)) obstacleLeft = 100;
+    obstacleLeft -= 5;
+    obstacle.style.left = obstacleLeft + "%";
 
-    const buffer = 10;
-    const horizontalOverlap = playerRect.right > obsRect.left && playerRect.left < obsRect.right;
-    const verticalOverlap = playerRect.bottom > obsRect.top + buffer;
-    const overlap = horizontalOverlap && verticalOverlap;
+    // Kolize
+    let playerRect = player.getBoundingClientRect();
+    let obstacleRect = obstacle.getBoundingClientRect();
 
-    if (overlap) {
-      clearInterval(scoreInterval);
+    if (
+      playerRect.left < obstacleRect.right &&
+      playerRect.right > obstacleRect.left &&
+      playerRect.bottom > obstacleRect.top &&
+      playerRect.top < obstacleRect.bottom
+    ) {
+      gameOver();
       clearInterval(moveInterval);
-      clearInterval(obstacleInterval);
-      running = false;
-
-      triggerJump(true);
-
-      finalScore.textContent = score;
-      bestScoreGameOverEl.textContent = bestScore;
-      gameOverBox.style.display = "block";
-
-      // Uložení skóre s jménem hráče
-      setTimeout(() => {
-        const playerName = prompt("Zadej své jméno:");
-        if (playerName) {
-          saveScore(playerName, score);
-        }
-      }, 100);
     }
 
-    if (obsRect.right < 0) {
+    // Odstranění překážky
+    if (obstacleLeft < -10) {
       clearInterval(moveInterval);
       obstacle.remove();
     }
   }, 20);
 }
 
-const obstacleInterval = setInterval(() => {
-  if (running) {
-    createObstacle();
-  }
-}, 1500);
+// Spuštění hry
+let obstacleSpawner = setInterval(spawnObstacle, 1500);
+let scoreInterval = setInterval(() => {
+  if (!gameRunning) return;
+  score++;
+  scoreValue.textContent = score;
+}, 100);
 
-function saveScore(name, score) {
-  const scoreboard = JSON.parse(localStorage.getItem("scoreboard")) || {};
-  if (!scoreboard[name] || score > scoreboard[name]) {
-    scoreboard[name] = score;
+// Game Over
+function gameOver() {
+  gameRunning = false;
+  finalScore.textContent = score;
+  gameOverScreen.style.display = "block";
+
+  if (score > bestScore) {
+    bestScore = score;
+    bestScoreDisplay.textContent = bestScore;
+    bestScoreGameOver.textContent = bestScore;
+
+    scoreboard[playerName] = bestScore;
     localStorage.setItem("scoreboard", JSON.stringify(scoreboard));
+  } else {
+    bestScoreGameOver.textContent = bestScore;
+  }
+
+  updateScoreboard();
+}
+
+// Aktualizace tabulky skóre
+function updateScoreboard() {
+  scoreboardBody.innerHTML = "";
+  const sorted = Object.entries(scoreboard).sort((a, b) => b[1] - a[1]);
+  for (const [name, score] of sorted) {
+    const row = document.createElement("tr");
+    row.innerHTML = `<td>${name}</td><td>${score}</td>`;
+    scoreboardBody.appendChild(row);
   }
 }
+
+// Klávesa pro skok
+document.addEventListener("keydown", (e) => {
+  if (e.code === "Space" || e.code === "ArrowUp") {
+    e.preventDefault();
+    triggerJump();
+  }
+});
+
+// Inicializace scoreboardu
+updateScoreboard();
