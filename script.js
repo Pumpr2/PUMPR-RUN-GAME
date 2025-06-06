@@ -28,13 +28,16 @@ const scoreInterval = setInterval(() => {
   }
 }, 100);
 
-function triggerJump() {
-  if (!isJumping && running) {
+function triggerJump(force = false) {
+  if ((!isJumping && running) || force) {
     isJumping = true;
     player.classList.add("jump");
     setTimeout(() => {
-      player.classList.remove("jump");
-      isJumping = false;
+      // Když hra stále běží, povolíme pád
+      if (running) {
+        player.classList.remove("jump");
+        isJumping = false;
+      }
     }, 500);
   }
 }
@@ -78,13 +81,17 @@ function createObstacle() {
     const overlap = horizontalOverlap && verticalOverlap;
 
     if (overlap) {
-      clearInterval(moveInterval);
-      clearInterval(scoreInterval);
-      running = false;
-      finalScore.textContent = score;
-      bestScoreGameOverEl.textContent = bestScore;
-      gameOverBox.style.display = "block";
-    }
+  clearInterval(scoreInterval);
+  clearInterval(moveInterval);
+  running = false;
+
+  // Spusť skok naposled, aby postava „letěla dál“
+  triggerJump(true);
+
+  finalScore.textContent = score;
+  bestScoreGameOverEl.textContent = bestScore;
+  gameOverBox.style.display = "block";
+}
 
     if (obstacleLeft + obstacle.offsetWidth < 0) {
       clearInterval(moveInterval);
