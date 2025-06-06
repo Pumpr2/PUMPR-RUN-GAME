@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <title>Pumpr Run - Scoreboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f5f5f5; }
+    h1 { text-align: center; }
+    table { width: 100%; max-width: 400px; margin: auto; border-collapse: collapse; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    th { background: #ddd; }
+  </style>
+</head>
+<body>
+  <h1>Scoreboard</h1>
+  <table id="scoreboard">
+    <thead>
+      <tr>
+        <th>Hráč</th>
+        <th>Nejlepší skóre</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const scores = JSON.parse(localStorage.getItem("scoreboard")) || {};
+    const tbody = document.querySelector("#scoreboard tbody");
+
+    for (const name in scores) {
+      const row = document.createElement("tr");
+      row.innerHTML = `<td>${name}</td><td>${scores[name]}</td>`;
+      tbody.appendChild(row);
+    }
+  </script>
+</body>
+</html>
