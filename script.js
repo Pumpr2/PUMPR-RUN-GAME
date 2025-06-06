@@ -9,6 +9,7 @@ const gameOverBox = document.getElementById("game-over");
 let isJumping = false;
 let score = 0;
 let running = true;
+let obstacleSpeed = 3; // výchozí rychlost překážek (délka animace v sekundách)
 
 let bestScore = parseInt(localStorage.getItem("bestScore")) || 0;
 bestScoreEl.textContent = bestScore;
@@ -33,7 +34,6 @@ function triggerJump(force = false) {
     isJumping = true;
     player.classList.add("jump");
     setTimeout(() => {
-      // Když hra stále běží, povolíme pád
       if (running) {
         player.classList.remove("jump");
         isJumping = false;
@@ -56,21 +56,24 @@ document.addEventListener("touchstart", () => {
 function createObstacle() {
   if (!running) return;
 
+  // Zrychluj překážky (délka animace klesá, rychlost roste)
+  if (obstacleSpeed > 1.2) {
+    obstacleSpeed -= 0.05;
+  }
+
   const obstacle = document.createElement("div");
   obstacle.classList.add("obstacle");
+
+  // Nastav animaci s aktuální rychlostí
+  obstacle.style.animation = `move ${obstacleSpeed}s linear forwards`;
   game.appendChild(obstacle);
 
-  let obstacleLeft = game.offsetWidth;
-  obstacle.style.left = obstacleLeft + "px";
-
+  // Kontrola kolize v intervalu
   const moveInterval = setInterval(() => {
     if (!running) {
       clearInterval(moveInterval);
       return;
     }
-
-    obstacleLeft -= 5;
-    obstacle.style.left = obstacleLeft + "px";
 
     const playerRect = player.getBoundingClientRect();
     const obsRect = obstacle.getBoundingClientRect();
@@ -81,19 +84,19 @@ function createObstacle() {
     const overlap = horizontalOverlap && verticalOverlap;
 
     if (overlap) {
-  clearInterval(scoreInterval);
-  clearInterval(moveInterval);
-  running = false;
+      clearInterval(scoreInterval);
+      clearInterval(moveInterval);
+      running = false;
 
-  // Spusť skok naposled, aby postava „letěla dál“
-  triggerJump(true);
+      // Poslední skok pro efekt letu dál po nárazu
+      triggerJump(true);
 
-  finalScore.textContent = score;
-  bestScoreGameOverEl.textContent = bestScore;
-  gameOverBox.style.display = "block";
-}
+      finalScore.textContent = score;
+      bestScoreGameOverEl.textContent = bestScore;
+      gameOverBox.style.display = "block";
+    }
 
-    if (obstacleLeft + obstacle.offsetWidth < 0) {
+    if (obsRect.right < 0) {
       clearInterval(moveInterval);
       obstacle.remove();
     }
@@ -104,4 +107,4 @@ setInterval(() => {
   if (running) {
     createObstacle();
   }
-}, 2000);
+}, 1500);
