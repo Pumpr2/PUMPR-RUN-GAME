@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="cs">
 <head>
   <meta charset="UTF-8" />
   <title>Pumpr Run Game</title>
@@ -133,35 +133,102 @@
     <div id="player"></div>
     <div id="game-over">
       <h2>Game Over</h2>
-      <p>Your score: <span id="final-score">0</span></p>
-      <p>Best score: <span id="best-score-game-over">0</span></p>
-      <button onclick="location.reload()">Play Again</button>
+      <p>Tvůj výsledek: <span id="final-score">0</span></p>
+      <p>Nejlepší výsledek: <span id="best-score-game-over">0</span></p>
+      <button onclick="location.reload()">Hrát znovu</button>
     </div>
   </div>
 
   <div id="score">
     <div id="player-name-display"></div>
-    Current score: <span id="score-value">0</span><br />
-    Best score: <span id="best-score">0</span>
+    Aktuální skóre: <span id="score-value">0</span><br />
+    Nejlepší skóre: <span id="best-score">0</span>
   </div>
 
   <div id="jump-btn">
-    <button onclick="triggerJump()">Jump</button>
+    <button onclick="triggerJump()">Skok</button>
   </div>
 
   <div id="scoreboard">
-    <h3>Scoreboard</h3>
+    <h3>Žebříček hráčů</h3>
     <table>
       <thead>
         <tr>
-          <th>Player</th>
-          <th>Best Score</th>
+          <th>Hráč</th>
+          <th>Nejlepší skóre</th>
         </tr>
       </thead>
       <tbody id="scoreboard-body"></tbody>
     </table>
   </div>
 
-  <script src="script.js"></script>
+  <script>
+    // Proměnné hry
+    let scoreboard = JSON.parse(localStorage.getItem("scoreboard")) || {};
+    let playerName = localStorage.getItem("playerName") || prompt("Zadej své jméno:");
+    if (!playerName) playerName = "Neznámý hráč";
+    localStorage.setItem("playerName", playerName);
+    document.getElementById("player-name-display").textContent = `Hraje: ${playerName}`;
+
+    let score = 0;
+    let bestScore = scoreboard[playerName] || 0;
+
+    document.getElementById("score-value").textContent = score;
+    document.getElementById("best-score").textContent = bestScore;
+
+    // Funkce pro skok (přidej si podle potřeby)
+    function triggerJump() {
+      const player = document.getElementById("player");
+      if (player.classList.contains("jump")) return; // už skáče
+      player.classList.add("jump");
+      setTimeout(() => player.classList.remove("jump"), 500);
+    }
+
+    // Simulace hry: skóre roste každých 100 ms
+    let gameInterval = setInterval(() => {
+      score++;
+      document.getElementById("score-value").textContent = score;
+
+      if (score > bestScore) {
+        bestScore = score;
+        document.getElementById("best-score").textContent = bestScore;
+      }
+    }, 100);
+
+    // Funkce skončení hry
+    function gameOver() {
+      clearInterval(gameInterval);
+      document.getElementById("game-over").style.display = "block";
+      document.getElementById("final-score").textContent = score;
+      document.getElementById("best-score-game-over").textContent = bestScore;
+
+      // Uložit skóre do scoreboardu a localStorage
+      if (!scoreboard[playerName] || score > scoreboard[playerName]) {
+        scoreboard[playerName] = score;
+        localStorage.setItem("scoreboard", JSON.stringify(scoreboard));
+      }
+      updateScoreboardTable();
+    }
+
+    // Aktualizace žebříčku v tabulce
+    function updateScoreboardTable() {
+      const tbody = document.getElementById("scoreboard-body");
+      tbody.innerHTML = "";
+      const sorted = Object.entries(scoreboard).sort((a,b) => b[1] - a[1]);
+      for (const [name, score] of sorted) {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${name}</td><td>${score}</td>`;
+        tbody.appendChild(tr);
+      }
+    }
+
+    // Hned načti scoreboard
+    updateScoreboardTable();
+
+    // Tady bude logika pro detekci kolize apod.
+    // Pro test můžeš vyvolat gameOver() třeba po 10 sekundách:
+    // setTimeout(gameOver, 10000);
+
+  </script>
 </body>
 </html>
