@@ -40,6 +40,7 @@
       position: absolute;
       bottom: 0;
       background: url('kaktus.png') no-repeat center / contain;
+      animation: move 2s linear infinite;
     }
 
     @keyframes move {
@@ -163,7 +164,6 @@
   </div>
 
   <script>
-    // Proměnné hry
     let scoreboard = JSON.parse(localStorage.getItem("scoreboard")) || {};
     let playerName = localStorage.getItem("playerName") || prompt("Zadej své jméno:");
     if (!playerName) playerName = "Neznámý hráč";
@@ -176,33 +176,59 @@
     document.getElementById("score-value").textContent = score;
     document.getElementById("best-score").textContent = bestScore;
 
-    // Funkce pro skok (přidej si podle potřeby)
     function triggerJump() {
       const player = document.getElementById("player");
-      if (player.classList.contains("jump")) return; // už skáče
+      if (player.classList.contains("jump")) return;
       player.classList.add("jump");
       setTimeout(() => player.classList.remove("jump"), 500);
     }
 
-    // Simulace hry: skóre roste každých 100 ms
+    document.addEventListener("keydown", e => {
+      if (e.code === "Space") triggerJump();
+    });
+
     let gameInterval = setInterval(() => {
       score++;
       document.getElementById("score-value").textContent = score;
-
       if (score > bestScore) {
         bestScore = score;
         document.getElementById("best-score").textContent = bestScore;
       }
     }, 100);
 
-    // Funkce skončení hry
+    function spawnObstacle() {
+      const game = document.getElementById("game");
+      const obstacle = document.createElement("div");
+      obstacle.className = "obstacle";
+      obstacle.style.left = "100%";
+      game.appendChild(obstacle);
+
+      const moveInterval = setInterval(() => {
+        const obstacleLeft = parseInt(getComputedStyle(obstacle).left);
+        const player = document.getElementById("player");
+        const playerTop = parseInt(getComputedStyle(player).bottom);
+
+        if (obstacleLeft <= 90 && obstacleLeft >= 30 && playerTop < 50) {
+          clearInterval(moveInterval);
+          obstacle.remove();
+          gameOver();
+        }
+
+        if (obstacleLeft < -60) {
+          clearInterval(moveInterval);
+          obstacle.remove();
+        }
+      }, 50);
+    }
+
+    setInterval(spawnObstacle, 2000);
+
     function gameOver() {
       clearInterval(gameInterval);
       document.getElementById("game-over").style.display = "block";
       document.getElementById("final-score").textContent = score;
       document.getElementById("best-score-game-over").textContent = bestScore;
 
-      // Uložit skóre do scoreboardu a localStorage
       if (!scoreboard[playerName] || score > scoreboard[playerName]) {
         scoreboard[playerName] = score;
         localStorage.setItem("scoreboard", JSON.stringify(scoreboard));
@@ -210,7 +236,6 @@
       updateScoreboardTable();
     }
 
-    // Aktualizace žebříčku v tabulce
     function updateScoreboardTable() {
       const tbody = document.getElementById("scoreboard-body");
       tbody.innerHTML = "";
@@ -222,13 +247,7 @@
       }
     }
 
-    // Hned načti scoreboard
     updateScoreboardTable();
-
-    // Tady bude logika pro detekci kolize apod.
-    // Pro test můžeš vyvolat gameOver() třeba po 10 sekundách:
-    // setTimeout(gameOver, 10000);
-
   </script>
 </body>
 </html>
