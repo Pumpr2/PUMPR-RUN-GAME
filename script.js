@@ -29,7 +29,7 @@ const scoreInterval = setInterval(() => {
 }, 100);
 
 function triggerJump() {
-  if (!isJumping) {
+  if (!isJumping && running) {
     isJumping = true;
     player.classList.add("jump");
     setTimeout(() => {
@@ -52,24 +52,33 @@ document.addEventListener("touchstart", () => {
 
 function createObstacle() {
   if (!running) return;
+
   const obstacle = document.createElement("div");
   obstacle.classList.add("obstacle");
-  obstacle.style.left = "100%";
   game.appendChild(obstacle);
 
+  let obstacleLeft = game.offsetWidth;
+  obstacle.style.left = obstacleLeft + "px";
+
   const moveInterval = setInterval(() => {
+    if (!running) {
+      clearInterval(moveInterval);
+      return;
+    }
+
+    obstacleLeft -= 5;
+    obstacle.style.left = obstacleLeft + "px";
+
     const playerRect = player.getBoundingClientRect();
     const obsRect = obstacle.getBoundingClientRect();
 
-    // Zlepšená kolizní detekce s rezervou nahoře
-    const buffer = 10; // Rezerva (např. 10 px)
-
+    const buffer = 10;
     const horizontalOverlap = playerRect.right > obsRect.left && playerRect.left < obsRect.right;
     const verticalOverlap = playerRect.bottom > obsRect.top + buffer;
-
     const overlap = horizontalOverlap && verticalOverlap;
 
     if (overlap) {
+      clearInterval(moveInterval);
       clearInterval(scoreInterval);
       running = false;
       finalScore.textContent = score;
@@ -77,11 +86,15 @@ function createObstacle() {
       gameOverBox.style.display = "block";
     }
 
-    if (obsRect.right < 0) {
+    if (obstacleLeft + obstacle.offsetWidth < 0) {
       clearInterval(moveInterval);
       obstacle.remove();
     }
   }, 20);
 }
 
-setInterval(createObstacle, 2000);
+setInterval(() => {
+  if (running) {
+    createObstacle();
+  }
+}, 2000);
