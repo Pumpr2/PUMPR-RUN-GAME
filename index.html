@@ -31,7 +31,7 @@
       position: absolute;
       bottom: 0;
       left: 10vw;
-      background: url('jan-pumpr.png') no-repeat center/contain;
+      background: url('dino.png') no-repeat center/contain;
     }
     .obstacle {
       width: 10vw;
@@ -40,7 +40,7 @@
       max-height: 60px;
       position: absolute;
       bottom: 0;
-      background: url('rozvadec.png') no-repeat center/contain;
+      background: url('kaktus.png') no-repeat center/contain;
       animation: move 3s linear forwards;
     }
     @keyframes move {
@@ -57,8 +57,9 @@
     }
     #score {
       text-align: center;
-      font-size: 1.5em;
+      font-size: 1.3em;
       margin-top: 10px;
+      line-height: 1.4em;
     }
     #game-over {
       display: none;
@@ -70,6 +71,10 @@
       border: 2px solid #444;
       padding: 20px;
       z-index: 10;
+      text-align: center;
+      width: 80%;
+      max-width: 300px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
     }
     #jump-btn {
       display: none;
@@ -79,6 +84,7 @@
     #jump-btn button {
       padding: 10px 20px;
       font-size: 1.2em;
+      cursor: pointer;
     }
 
     @media (pointer: coarse) {
@@ -94,11 +100,15 @@
     <div id="game-over">
       <h2>Game Over</h2>
       <p>Your score: <span id="final-score">0</span></p>
+      <p>Best score: <span id="best-score-game-over">0</span></p>
       <button onclick="location.reload()">Play Again</button>
     </div>
   </div>
 
-  <div id="score">Score: <span id="score-value">0</span></div>
+  <div id="score">
+    Current score: <span id="score-value">0</span><br />
+    Best score: <span id="best-score">0</span>
+  </div>
 
   <div id="jump-btn">
     <button onclick="triggerJump()">Jump</button>
