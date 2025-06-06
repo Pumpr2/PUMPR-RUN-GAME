@@ -10,7 +10,6 @@ let isJumping = false;
 let score = 0;
 let running = true;
 
-// Načti nejlepší skóre z localStorage (nebo 0 pokud neexistuje)
 let bestScore = parseInt(localStorage.getItem("bestScore")) || 0;
 bestScoreEl.textContent = bestScore;
 bestScoreGameOverEl.textContent = bestScore;
@@ -62,15 +61,19 @@ function createObstacle() {
     const playerRect = player.getBoundingClientRect();
     const obsRect = obstacle.getBoundingClientRect();
 
-    // jednoduchá kolize
-    if (
-      obsRect.left < playerRect.right &&
-      obsRect.right > playerRect.left &&
-      obsRect.bottom > playerRect.top
-    ) {
+    // Zlepšená kolizní detekce s rezervou nahoře
+    const buffer = 10; // Rezerva (např. 10 px)
+
+    const horizontalOverlap = playerRect.right > obsRect.left && playerRect.left < obsRect.right;
+    const verticalOverlap = playerRect.bottom > obsRect.top + buffer;
+
+    const overlap = horizontalOverlap && verticalOverlap;
+
+    if (overlap) {
       clearInterval(scoreInterval);
       running = false;
       finalScore.textContent = score;
+      bestScoreGameOverEl.textContent = bestScore;
       gameOverBox.style.display = "block";
     }
 
@@ -81,5 +84,4 @@ function createObstacle() {
   }, 20);
 }
 
-// Generuj překážky každé 2 vteřiny
 setInterval(createObstacle, 2000);
