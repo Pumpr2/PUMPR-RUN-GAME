@@ -16,11 +16,10 @@
       width: 100%;
       max-width: 800px;
       aspect-ratio: 2 / 1;
-      height: 40vh;
-      max-height: 400px;
+      height: auto;
       margin: 50px auto 10px auto;
       position: relative;
-      background: #000000;
+      background: #000;
       border: 2px solid #fa0202;
       overflow: hidden;
       touch-action: none;
@@ -77,8 +76,8 @@
       padding: 20px;
       z-index: 10;
       text-align: center;
-      width: 60%;
-      max-width: 250px;
+      width: 90%;
+      max-width: 300px;
       box-shadow: 0 0 10px rgba(0,0,0,0.3);
     }
 
@@ -99,9 +98,37 @@
         display: block;
       }
     }
+
+    #scoreboard {
+      margin: 20px auto;
+      max-width: 800px;
+      padding: 10px;
+      background: #fff;
+      border: 2px solid #333;
+      font-size: 1em;
+    }
+
+    #scoreboard table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    #scoreboard th,
+    #scoreboard td {
+      border: 1px solid #aaa;
+      padding: 8px;
+      text-align: center;
+    }
+
+    #player-name-display {
+      text-align: center;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
+
   <div id="game">
     <div id="player"></div>
     <div id="game-over">
@@ -113,6 +140,7 @@
   </div>
 
   <div id="score">
+    <div id="player-name-display"></div>
     Current score: <span id="score-value">0</span><br />
     Best score: <span id="best-score">0</span>
   </div>
@@ -121,8 +149,19 @@
     <button onclick="triggerJump()">Jump</button>
   </div>
 
+  <div id="scoreboard">
+    <h3>Scoreboard</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Player</th>
+          <th>Best Score</th>
+        </tr>
+      </thead>
+      <tbody id="scoreboard-body"></tbody>
+    </table>
+  </div>
+
   <script src="script.js"></script>
 </body>
 </html>
-
-
