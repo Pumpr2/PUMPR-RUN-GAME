@@ -19,6 +19,7 @@ The game runs directly in your browser, tracks your score during the session, an
 
 ---
 
+
 ## ✨ Features
 
 - ✅ Custom character (Jan Pumpr)
