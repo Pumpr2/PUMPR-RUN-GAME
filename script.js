@@ -6,6 +6,7 @@ let bestScoreGameOver = document.getElementById("best-score-game-over");
 let gameOverScreen = document.getElementById("game-over");
 let scoreboardBody = document.getElementById("scoreboard-body");
 let playerNameDisplay = document.getElementById("player-name-display");
+let activePlayersDisplay = document.getElementById("active-players");
 
 let isJumping = false;
 let score = 0;
@@ -13,8 +14,8 @@ let bestScore = 0;
 let gameRunning = true;
 let playerName;
 
-let obstacleSpawner;
-let scoreInterval;
+// --- Aktivní hráči (uložené v localStorage) ---
+let activePlayers = JSON.parse(localStorage.getItem("activePlayers")) || [];
 
 // Získání nebo zadání jména hráče
 function getPlayerName() {
@@ -27,9 +28,14 @@ function getPlayerName() {
   return name;
 }
 
-// Načti jméno při načtení
+// Načtení jména a přidání do aktivních hráčů
 playerName = getPlayerName();
 playerNameDisplay.textContent = `Jméno hráče: ${playerName}`;
+if (!activePlayers.includes(playerName)) {
+  activePlayers.push(playerName);
+  localStorage.setItem("activePlayers", JSON.stringify(activePlayers));
+}
+activePlayersDisplay.textContent = `Hráčů právě hraje: ${activePlayers.length}`;
 
 // Získání skóre hráče
 let scoreboard = JSON.parse(localStorage.getItem("scoreboard")) || {};
@@ -79,12 +85,10 @@ function spawnObstacle() {
       playerRect.bottom > obstacleRect.top &&
       playerRect.top < obstacleRect.bottom
     ) {
-      clearInterval(moveInterval);
-      obstacle.remove();
       gameOver();
+      clearInterval(moveInterval);
     }
 
-    // Odstranění překážky
     if (obstacleLeft < -10) {
       clearInterval(moveInterval);
       obstacle.remove();
@@ -92,17 +96,26 @@ function spawnObstacle() {
   }, 20);
 }
 
+// Spuštění hry
+let obstacleSpawner = setInterval(spawnObstacle, 1500);
+let scoreInterval = setInterval(() => {
+  if (!gameRunning) return;
+  score++;
+  scoreValue.textContent = score;
+}, 100);
+
 // Game Over
 function gameOver() {
-  if (!gameRunning) return;
-
   gameRunning = false;
-  clearInterval(obstacleSpawner);
-  clearInterval(scoreInterval);
-
   finalScore.textContent = score;
   gameOverScreen.style.display = "block";
 
+  // Odebrat hráče ze seznamu aktivních
+  activePlayers = activePlayers.filter((name) => name !== playerName);
+  localStorage.setItem("activePlayers", JSON.stringify(activePlayers));
+  activePlayersDisplay.textContent = `Hráčů právě hraje: ${activePlayers.length}`;
+
+  // Skóre
   if (score > bestScore) {
     bestScore = score;
     bestScoreDisplay.textContent = bestScore;
@@ -123,7 +136,7 @@ function updateScoreboard() {
   const sorted = Object.entries(scoreboard).sort((a, b) => b[1] - a[1]);
   for (const [name, score] of sorted) {
     const row = document.createElement("tr");
-    row.innerHTML = `<td>${name}</td><td>${score}</td>`;
+    row.innerHTML = `<td${name === playerName ? ' style="font-weight: bold; color: gold;"' : ''}>${name}</td><td>${score}</td>`;
     scoreboardBody.appendChild(row);
   }
 }
@@ -136,12 +149,5 @@ document.addEventListener("keydown", (e) => {
   }
 });
 
-// Inicializace hry
+// Inicializace scoreboardu
 updateScoreboard();
-
-obstacleSpawner = setInterval(spawnObstacle, 1500);
-scoreInterval = setInterval(() => {
-  if (!gameRunning) return;
-  score++;
-  scoreValue.textContent = score;
-}, 100);
